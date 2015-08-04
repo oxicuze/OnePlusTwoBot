@@ -11,7 +11,7 @@ def generateString():
 
 while(True):
 	currentEmail = generateString()
-	requestURL = "https://invites.oneplus.net/index.php?r=share/signup&success_jsonpCallback=success_jsonpCallback&email={{0}}%40mailinator.com&koid={1}&_=1438595512634".format(currentEmail, "5-digitreservationID")
+	requestURL = "https://invites.oneplus.net/index.php?r=share/signup&success_jsonpCallback=success_jsonpCallback&email={0}%40mailinator.com&koid={1}&_=1438595512634".format(currentEmail, "5-digitreservationID")
 	
 	print("Sending invite to " + currentEmail + "@mailinator.com")
 	res = requests.get(requestURL)
@@ -28,8 +28,23 @@ while(True):
 		if message["subject"] == "Confirm your email":
 			emailID = message["id"]
 
-	if emailID is None:
-		continue
+	emailID = None
+	for i in range(0, 5):
+    		response = requests.get(mailinatorInbox)
+    		json_data = json.loads(response.text)
+
+    		for message in json_data["messages"]:
+		 if message["subject"] == "Confirm your email":
+        	    emailID = message["id"]
+
+    		if emailID:
+        	break
+
+    	#print('sleep')
+    	time.sleep(1)
+
+	if not emailID:
+    		continue
 
 	mailinatorMessage = "https://api.mailinator.com/api/email?id=" + emailID + "&token=" + apiToken
 	response = requests.get(mailinatorMessage)
